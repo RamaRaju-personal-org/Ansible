@@ -1,0 +1,32 @@
+- name: Install Docker-compose
+  ansible.builtin.get_url: 
+        # If the url isn't found, use 'url: https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-x86_64'
+        # See available release tags per version here: https://github.com/docker/compose/releases
+        url: https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-{{lookup('pipe', 'uname -m')}}
+        dest: /usr/local/bin/docker-compose
+        mode: +x
+- name: Start docker daemon
+  ansible.builtin.systemd:
+        name: docker
+        state: started
+- name: Install docker python module
+  ansible.builtin.pip:
+        name: 
+          - docker
+          - docker-compose
+
+
+- name: Copy docker compose
+  ansible.builtin.copy:
+    src: files/docker-compose.yaml
+    dest: /home/ram/docker-compose.yaml
+
+- name: Docker login
+  community.docker.docker_login: 
+    registry_url: "{{ docker_registry }}"
+    username: "{{ docker_username }}"
+    password: "{{ docker_password }}"
+
+- name: Start container from compose
+  community.docker.docker_compose: 
+    project_src: /home/ram
