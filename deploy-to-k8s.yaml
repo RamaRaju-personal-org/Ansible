@@ -13,7 +13,7 @@
 
     - name: Deploy nginx 
       kubernetes.core.k8s: #FQCN 
-        src: /Users/ramraju/Desktop/Ansible/nginx-deploy.yaml # deployment file path 
+        src: /path/to/connect-cluster.yaml/nginx-deploy.yaml # deployment file path 
         state: absent
         kubeconfig: /path/to/connect-cluster.yaml   # to connect to k8s cluster
         namespace: my-app
