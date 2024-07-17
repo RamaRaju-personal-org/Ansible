@@ -1,0 +1,15 @@
+---
+- name: create nginx server 
+  hosts: ec2  # we can mention the specific ip address also 
+  become: yes  # This line enables running tasks with elevated root privileges
+
+  tasks:
+  - name: uninstall nginx server
+    yum:                    # yum is the package module for ec2-linux
+      name:  nginx          # tool name to install
+      state: absent         # use absent keyword to uninstall 
+  - name: stop nginx 
+    service:
+      name: nginx            # name of the service 
+      state: stopped         # use stopped key word to stop it 
+                               

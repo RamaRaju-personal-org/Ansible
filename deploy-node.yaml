@@ -1,0 +1,61 @@
+---
+- name: install node and npm
+  hosts: ec2 
+  become: yes # become root, don't use root for security best practices, package installation needs root user
+  tasks:
+    - name: update yum 
+      yum: update_cache=yes
+
+    - name: install nodejs and npm
+      yum: # yum module
+        name: 
+          - nodejs
+          - npm
+        state: present
+
+- name: Create new linux user for node app
+  hosts: ec2
+  become: yes # to create new user you need to be root
+  vars_files: 
+    - project-vars.yaml
+  tasks:
+    - name: Create Linux user
+      user: # user module to create a new user
+        name: "{{user_name}}"
+        comment: created user is the admin 
+        group: root
+      register: user_creation_result   # variable registering 
+    - debug: msg={{user_creation_result.uid}} # geting the user id of ram 
+
+
+- name: Deploy nodejs app
+  hosts: ec2 
+  become: True  # to become a specific user 
+  become_user: "{{user_name}}"
+  vars_files:   # passing variables using variable file
+    - project-vars.yaml
+  vars:
+    - location: /Users/ramraju/Desktop/Ansible/nodeapp.tgz  # passing variables directly
+
+  tasks:
+    - name : copy nodeapp.tgz folder to the server and unpack tar file
+      unarchive: # unarchive module
+        src: "{{location}}" # variable for nodefile location
+        dest: "{{destination}}"  # home dir of user ram 
+     
+
+    - name: install dependencies
+      npm: # npm module
+        path: "{{destination}}/node-app/"
+
+    - name: start the application
+      command: #command module is more secure than shell module
+        chdir: "{{destination}}/node-app/app"
+        cmd: node server
+      async:  1000  # async module to run the node command in background
+      poll: 0
+
+    - name: check if application is running
+      shell: ps aux | grep node 
+      register:  app_status # result of the above shell command will be assigned to the variable app_status
+    - debug: msg={{app_status.stdout_lines}}         # reference the app_status variable to check the status of the node app
