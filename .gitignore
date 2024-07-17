@@ -6,6 +6,8 @@ ansible_key.pub
 hosts
 project-vars.yaml
 nodeapp.tgz
+node-app
+
 # Local .terraform directories
 **/.terraform/*
 *.zip
